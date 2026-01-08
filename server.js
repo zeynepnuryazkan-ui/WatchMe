@@ -72,3 +72,13 @@ app.listen(PORT, () => console.log(`🚀 Watch Me yayında: Port ${PORT}`));
 
     raporlariYukle();
 </script>
+app.get('/admin-verileri', (req, res) => {
+    const gelenSifre = req.query.sifre;
+    const GERCEK_SIFRE = "admin123"; // Şifren bu!
+
+    if (gelenSifre === GERCEK_SIFRE) {
+        res.json(raporlar);
+    } else {
+        res.status(401).send("Yetkisiz erişim!");
+    }
+});
