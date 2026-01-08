@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const app = express();
 
-app.use(express.json());
+app.use(express.json());app.use(express.json()); 
 app.use(express.static('.'));
 
 // VERİ DEPOLARI
@@ -100,5 +100,6 @@ app.post('/rapor-et', (req, res) => {
     console.log("Yeni Rapor Geldi:", yeniRapor);
     res.status(200).send("Başarılı");
 });
+
 
 
