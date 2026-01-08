@@ -22,4 +22,14 @@
                 });
             });
     </script>
-</body>
+
+</body>app.get('/admin-verileri', (req, res) => {
+    const gelenSifre = req.query.sifre;
+    const GERCEK_SIFRE = "admin123"; // Buraya kendi gizli şifreni yaz!
+
+    if (gelenSifre === GERCEK_SIFRE) {
+        res.json(raporlar);
+    } else {
+        res.status(401).send("Yetkisiz erişim! Şifre yanlış.");
+    }
+});
