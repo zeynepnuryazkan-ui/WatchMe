@@ -23,7 +23,24 @@
 
 <div class="panel-container">
     <h2>Yazar Paneli</h2>
-    <p>Kitabınızı milyonlarca okuyucuya tanıtın.</p>
+    <p>Kitabınızı milyonlarca okuyucuya tanıtın.</p><input type="email" id="yazarEmail" placeholder="E-posta Adresiniz (İletişim için)" required 
+       style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #333; background: #222; color: white;">
+
+<script>
+    // Kaydet butonuna basıldığında gönderilen veriye email'i de ekle
+    async function videoYukle() {
+        const videoIsmi = document.getElementById('videoIsmi').value;
+        const videoLink = document.getElementById('videoLink').value;
+        const email = document.getElementById('yazarEmail').value;
+
+        const response = await fetch('/video-yukle', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ isim: videoIsmi, link: videoLink, email: email })
+        });
+        // ... (diğer kodlar aynı kalabilir)
+    }
+</script>
     
     <label>Yazar Adı Soyadı</label>
     <input type="text" id="yazar" placeholder="Örn: Zeynep Yılmaz">
@@ -66,4 +83,5 @@
 </script>
 
 </body>
+
 </html>
