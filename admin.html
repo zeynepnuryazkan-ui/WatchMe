@@ -9,7 +9,16 @@
     <div id="liste"></div>
 
     <script>
-        fetch('/admin-verileri')
+        fetchapp.get('/admin-verileri', (req, res) => {
+    const gelenSifre = req.query.sifre;
+    const GERCEK_SIFRE = "admin123"; // Şifren bu olacak
+
+    if (gelenSifre === GERCEK_SIFRE) {
+        res.json(raporlar);
+    } else {
+        res.status(401).send("Yetkisiz erişim!");
+    }
+});
             .then(res => res.json())
             .then(data => {
                 const liste = document.getElementById('liste');
@@ -61,4 +70,5 @@
         res.status(401).send("Yetkisiz erişim! Şifre yanlış.");
     }
 });
+
 
