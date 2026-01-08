@@ -7,8 +7,26 @@ app.use(express.json());
 app.use(express.static('.'));
 
 // VERİ DEPOLARI
-let videolar = [];
-let raporlar = [];
+let videolar = []; // Videoları, linkleri ve yazar e-postalarını tutar
+let raporlar = []; // Şikayetleri tutar
+
+// Video Yükleme (E-posta ile beraber)
+app.post('/video-yukle', (req, res) => {
+    videolar.push(req.body); 
+    res.status(200).send("Yüklendi");
+});
+
+// Video Detayını Getirme (İzleme sayfası için)
+app.get('/video-detay', (req, res) => {
+    const video = videolar.find(v => v.isim === req.query.id);
+    res.json(video || {});
+});
+
+// Raporlama
+app.post('/rapor-et', (req, res) => {
+    raporlar.push({ ...req.body, tarih: new Date().toLocaleString() });
+    res.status(200).send("Rapor alındı");
+});
 
 // --- ANA YÖNLENDİRME ---
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
@@ -95,3 +113,4 @@ app.post('/rapor-et', (req, res) => {
     console.log("Yeni Rapor Geldi:", yeniRapor);
     res.status(200).send("Başarılı");
 });
+
