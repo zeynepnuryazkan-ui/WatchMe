@@ -82,3 +82,16 @@ app.get('/admin-verileri', (req, res) => {
         res.status(401).send("Yetkisiz erişim!");
     }
 });
+
+let raporlar = []; // Şikayetlerin tutulacağı liste
+
+app.post('/rapor-et', (req, res) => {
+    const yeniRapor = {
+        video: req.body.video,
+        sebep: req.body.sebep,
+        tarih: new Date().toLocaleString()
+    };
+    raporlar.push(yeniRapor);
+    console.log("Yeni Rapor Geldi:", yeniRapor);
+    res.status(200).send("Başarılı");
+});
