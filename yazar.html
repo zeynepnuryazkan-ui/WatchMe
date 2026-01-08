@@ -1,0 +1,69 @@
+<nav style="background: #000; padding: 15px; display: flex; gap: 20px; border-bottom: 2px solid #e50914;">
+    <a href="anasayfa.html" style="color: white; text-decoration: none; font-weight: bold;">📺 Ana Sayfa</a>
+    <a href="yazar.html" style="color: white; text-decoration: none; font-weight: bold;">✍️ Yazar Paneli</a>
+    <a href="admin.html" style="color: white; text-decoration: none; font-weight: bold;">🛡️ Admin</a>
+    <a href="index.html" style="color: #e50914; text-decoration: none; margin-left: auto;">🚪 Çıkış</a>
+</nav><!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Watch Me - Yazar Paneli</title>
+    <style>
+        body { background: #141414; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .panel-container { width: 500px; margin: 50px auto; background: #1f1f1f; padding: 30px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        h2 { color: #e50914; border-bottom: 2px solid #333; padding-bottom: 10px; }
+        label { display: block; margin-top: 15px; color: #b3b3b3; }
+        input { width: 100%; padding: 10px; margin-top: 5px; background: #333; border: 1px solid #444; color: white; border-radius: 5px; box-sizing: border-box; }
+        .upload-btn { width: 100%; padding: 12px; background: #e50914; color: white; border: none; border-radius: 5px; margin-top: 25px; cursor: pointer; font-weight: bold; }
+        .upload-btn:hover { background: #ff0a16; }
+        .info { font-size: 12px; color: #888; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="panel-container">
+    <h2>Yazar Paneli</h2>
+    <p>Kitabınızı milyonlarca okuyucuya tanıtın.</p>
+    
+    <label>Yazar Adı Soyadı</label>
+    <input type="text" id="yazar" placeholder="Örn: Zeynep Yılmaz">
+
+    <label>Kitap Adı</label>
+    <input type="text" id="kitap" placeholder="Örn: Gece Yarısı Kütüphanesi">
+
+    <label>Video Tanıtım Linki (MP4 veya YouTube)</label>
+    <input type="text" id="video" placeholder="https://link-adresi.com/video.mp4">
+
+    <label>Kapak Görseli Linki</label>
+    <input type="text" id="kapak" placeholder="https://link-adresi.com/kapak.jpg">
+
+    <button class="upload-btn" onclick="videoGonder()">Tanıtımı Yayınla</button>
+    
+    <p class="info">⚠️ Videonuz topluluk kurallarımıza uygun olmalıdır. Kadına şiddet, taciz veya nefret söylemi içeren videolar doğrudan silinir.</p>
+</div>
+
+<script>
+    async function videoGonder() {
+        const veri = {
+            yazar: document.getElementById('yazar').value,
+            kitapAdi: document.getElementById('kitap').value,
+            videoUrl: document.getElementById('video').value,
+            kapakResmi: document.getElementById('kapak').value
+        };
+
+        if(!veri.yazar || !veri.videoUrl) return alert("Lütfen gerekli alanları doldurun.");
+
+        const response = await fetch('/video-yukle', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(veri)
+        });
+
+        const sonuc = await response.json();
+        alert(sonuc.mesaj);
+        window.location.href = "anasayfa.html"; // Yükleme bitince ana sayfaya yönlendir
+    }
+</script>
+
+</body>
+</html>
