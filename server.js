@@ -38,4 +38,37 @@ app.post('/sikayet-et', (req, res) => {
 app.get('/admin-verileri', (req, res) => res.json(raporlar));
 // Yeni hali (İnternet uyumlu):
 const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => console.log(`🚀 Watch Me yayında: Port ${PORT}`));
+<script>
+    async function raporlariYukle() {
+        // Sayfa açılır açılmaz şifre sorar
+        const sifre = prompt("Lütfen Admin Şifresini Giriniz:");
+        
+        const response = await fetch(`/admin-verileri?sifre=${sifre}`);
+        
+        if (response.status === 401) {
+            alert("Hatalı şifre! Sayfaya erişim reddedildi.");
+            window.location.href = "index.html"; // Yanlış şifrede ana sayfaya atar
+            return;
+        }
+
+        const raporlar = await response.json();
+        const liste = document.getElementById('raporListesi');
+        
+        if (raporlar.length === 0) {
+            liste.innerHTML = "<li>Henüz raporlanmış bir video yok.</li>";
+            return;
+        }
+
+        liste.innerHTML = raporlar.map(r => `
+            <li style="background: #222; margin-bottom: 10px; padding: 15px; border-left: 5px solid red;">
+                <strong>Video:</strong> ${r.video} <br>
+                <strong>Sebep:</strong> ${r.sebep} <br>
+                <small>Tarih: ${r.tarih}</small>
+            </li>
+        `).join('');
+    }
+
+    raporlariYukle();
+</script>
