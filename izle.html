@@ -23,7 +23,40 @@
     <div class="video-wrapper">
         <video id="myVideo" controls>
             <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
-        </video>
+        </video><div style="margin-top: 20px; display: flex; gap: 10px;">
+    <button onclick="raporla()" style="background: #e50914; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer;">⚠️ Raporla</button>
+    <a id="mailLinki" href="#" style="background: #007bff; color: white; text-decoration: none; padding: 10px 15px; border-radius: 4px; display: none;">📧 Yazarla İletişim</a>
+</div>
+
+<script>
+    async function videoBilgileriniYukle() {
+        const id = new URLSearchParams(window.location.search).get('v');
+        const res = await fetch(`/video-detay?id=${id}`);
+        const data = await res.json();
+
+        // Eğer yazar maili varsa butonu göster
+        if(data.email) {
+            const link = document.getElementById('mailLinki');
+            link.href = `mailto:${data.email}?subject=WatchMe Videosu Hakkında`;
+            link.style.display = "inline-block";
+        }
+    }
+
+    async function raporla() {
+        const sebep = prompt("Şikayet sebebiniz nedir?");
+        if(!sebep) return;
+        
+        const videoIsmi = new URLSearchParams(window.location.search).get('v');
+        await fetch('/rapor-et', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ video: videoIsmi, sebep: sebep })
+        });
+        alert("Raporunuz admin paneline iletildi.");
+    }
+
+    videoBilgileriniYukle();
+</script>
         
         <div id="menu" class="interactive-menu">
             <h2>Hikaye Nasıl Devam Etsin?</h2>
@@ -123,3 +156,4 @@
 
     videoBilgisiGetir();
 </script>
+
