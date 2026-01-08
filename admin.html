@@ -21,7 +21,35 @@
                     </p>`;
                 });
             });
-    </script>
+    </script>async function raporlariYukle() {
+        // Sayfa açılır açılmaz şifre sorar
+        const sifre = prompt("Lütfen Admin Şifresini Giriniz:");
+        
+        // Sunucuya şifre ile istek atar
+        const response = await fetch(`/admin-verileri?sifre=${sifre}`);
+        
+        if (response.status === 401) {
+            alert("Hatalı şifre! Erişim reddedildi.");
+            window.location.href = "dashboard.html";
+            return;
+        }
+
+        const raporlar = await response.json();
+        const liste = document.getElementById('raporListesi');
+        
+        if (raporlar.length === 0) {
+            liste.innerHTML = "<p>Henüz raporlanmış bir video yok.</p>";
+            return;
+        }
+
+        liste.innerHTML = raporlar.map(r => `
+            <div style="background: #222; margin-bottom: 10px; padding: 15px; border-left: 5px solid #e50914;">
+                <strong>Video:</strong> ${r.video} <br>
+                <strong>Sebep:</strong> ${r.sebep} <br>
+                <small style="color: #888;">Tarih: ${r.tarih}</small>
+            </div>
+        `).join('');
+    }
 
 </body>app.get('/admin-verileri', (req, res) => {
     const gelenSifre = req.query.sifre;
@@ -33,3 +61,4 @@
         res.status(401).send("Yetkisiz erişim! Şifre yanlış.");
     }
 });
+
