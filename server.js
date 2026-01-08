@@ -11,49 +11,36 @@ let videolar = []; // Videoları, linkleri ve yazar e-postalarını tutar
 let raporlar = []; // Şikayetleri tutar
 
 // Video Yükleme (E-posta ile beraber)
+// Gelen videoları, linkleri ve yazar e-postalarını tutacak ana liste
+let videolar = []; 
+let raporlar = []; 
+
+// YAZAR KAYDI: Artık email bilgisini de alıyoruz
 app.post('/video-yukle', (req, res) => {
-    videolar.push(req.body); 
-    res.status(200).send("Yüklendi");
+    const yeniVideo = {
+        isim: req.body.isim,
+        link: req.body.link,
+        email: req.body.email // Yazardan gelen mail adresi
+    };
+    videolar.push(yeniVideo);
+    res.status(200).send("Video Başarıyla Yüklendi");
 });
 
-// Video Detayını Getirme (İzleme sayfası için)
+// VİDEO DETAYI: İzleyici sayfası için mail bilgisini de gönderiyoruz
 app.get('/video-detay', (req, res) => {
     const video = videolar.find(v => v.isim === req.query.id);
     res.json(video || {});
 });
 
-// Raporlama
+// RAPOR ETME: Şikayetleri listeye ekler
 app.post('/rapor-et', (req, res) => {
-    raporlar.push({ ...req.body, tarih: new Date().toLocaleString() });
-    res.status(200).send("Rapor alındı");
+    raporlar.push({
+        video: req.body.video,
+        sebep: req.body.sebep,
+        tarih: new Date().toLocaleString()
+    });
+    res.status(200).send("Şikayet Alındı");
 });
-
-// --- ANA YÖNLENDİRME ---
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
-
-// --- KAYIT MODÜLÜ ---
-app.post('/kayit', (req, res) => {
-    const { user, pass } = req.body;
-    fs.appendFileSync('kullanicilar.txt', `Kullanıcı: ${user}, Şifre: ${pass}\n`);
-    res.send({ mesaj: "Başarıyla giriş yapıldı!" });
-});
-
-// --- YAZAR MODÜLÜ (VİDEO YÜKLEME) ---
-app.post('/video-yukle', (req, res) => {
-    const yeniVideo = { id: videolar.length + 1, ...req.body, tarih: new Date().toLocaleString() };
-    videolar.push(yeniVideo);
-    res.send({ mesaj: "Tanıtım yayına alındı!" });
-});
-
-app.get('/videolari-listele', (req, res) => res.json(videolar));
-
-// --- GÜVENLİK MODÜLÜ (REPORT) ---
-app.post('/sikayet-et', (req, res) => {
-    raporlar.push({ ...req.body, tarih: new Date().toLocaleString() });
-    res.send({ mesaj: "Rapor admine iletildi." });
-});
-
-app.get('/admin-verileri', (req, res) => res.json(raporlar));
 // Yeni hali (İnternet uyumlu):
 const PORT = process.env.PORT || 3000;
 
@@ -113,4 +100,5 @@ app.post('/rapor-et', (req, res) => {
     console.log("Yeni Rapor Geldi:", yeniRapor);
     res.status(200).send("Başarılı");
 });
+
 
