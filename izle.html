@@ -79,3 +79,47 @@
 </body>
 
 </html>
+<div style="margin-top: 20px; display: flex; gap: 15px;">
+    <button onclick="raporEt()" 
+            style="background: #e50914; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+        ⚠️ Videoyu Raporla
+    </button>
+    
+    <a id="iletisimButonu" href="#" 
+       style="background: #007bff; color: white; text-decoration: none; padding: 12px 20px; border-radius: 4px; font-weight: bold; display: none;">
+        📧 Yazara Mesaj Gönder
+    </a>
+</div>
+
+<script>
+    // Sayfa açıldığında video verilerini ve yazarın emailini çek
+    async function videoBilgisiGetir() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const videoId = urlParams.get('v');
+        
+        // Sunucudan bu videonun detaylarını (ve yazar emailini) istiyoruz
+        const res = await fetch(`/video-detay?id=${videoId}`);
+        const data = await res.json();
+        
+        if(data.email) {
+            const btn = document.getElementById('iletisimButonu');
+            btn.href = `mailto:${data.email}?subject=WatchMe Videosu Hakkında`;
+            btn.style.display = "block";
+        }
+    }
+
+    async function raporEt() {
+        const sebep = prompt("Bu videoyu neden raporluyorsunuz?");
+        if (!sebep) return;
+
+        const videoId = new URLSearchParams(window.location.search).get('v');
+        await fetch('/rapor-et', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ videoId: videoId, sebep: sebep })
+        });
+        alert("Şikayetiniz alındı, admin ekibi inceleyecektir.");
+    }
+
+    videoBilgisiGetir();
+</script>
