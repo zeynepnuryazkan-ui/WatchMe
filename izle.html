@@ -46,6 +46,36 @@
 
         function devamEt() { m.style.display = 'none'; v.play(); }
         function yazaraGit() { window.location.href = "/yazar-sayfasi.html"; }
-    </script>
+    </script><div id="videoDetay">
+    <button onclick="raporEt()" style="background: red; color: white; border: none; padding: 10px; cursor: pointer;">⚠️ Videoyu Raporla</button>
+    <button onclick="iletisimeGec()" style="background: blue; color: white; border: none; padding: 10px; cursor: pointer; margin-left: 10px;">📧 Yazara Mesaj Gönder</button>
+</div>
+
+<script>
+    // Raporlama Fonksiyonu
+    async function raporEt() {
+        const sebep = prompt("Neden raporluyorsunuz? (Örn: Uygunsuz içerik)");
+        if (!sebep) return;
+
+        const videoIsmi = new URLSearchParams(window.location.search).get('v');
+        
+        const response = await fetch('/rapor-et', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ video: videoIsmi, sebep: sebep })
+        });
+
+        if (response.ok) {
+            alert("Raporunuz admin paneline iletildi. Teşekkürler!");
+        }
+    }
+
+    // İletişim Fonksiyonu
+    function iletisimeGec() {
+        // Bu kısım yazarın mail adresini veya iletişim formunu açabilir
+        alert("Yazarın iletişim adresi: yazar@watchme.com \n(Bu kısmı sunucudan dinamik çekebiliriz!)");
+    }
+</script>
 </body>
+
 </html>
