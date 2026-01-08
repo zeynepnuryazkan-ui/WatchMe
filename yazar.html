@@ -81,10 +81,40 @@
         alert(sonuc.mesaj);
         window.location.href = "anasayfa.html"; // Yükleme bitince ana sayfaya yönlendir
     }
-</script>
+</script>async function videoYukle() {
+    // Sayfadaki kutucuklardan verileri alıyoruz
+    const isim = document.getElementById('videoIsmi').value;
+    const link = document.getElementById('videoLink').value;
+    const email = document.getElementById('yazarEmail').value;
+
+    // Boş alan kontrolü
+    if (!isim || !link || !email) {
+        alert("Lütfen tüm alanları doldurun!");
+        return;
+    }
+
+    try {
+        const response = await fetch('/video-yukle', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ isim, link, email })
+        });
+
+        if (response.ok) {
+            alert("Tanıtım başarıyla yayınlandı!");
+            window.location.href = "index.html"; // Yükleme bitince ana sayfaya gönder
+        } else {
+            alert("Bir hata oluştu. Lütfen tekrar deneyin.");
+        }
+    } catch (error) {
+        console.error("Hata:", error);
+        alert("Sunucuya bağlanılamadı!");
+    }
+}
 
 </body>
 
 </html>
+
 
 
