@@ -4,71 +4,55 @@
     <a href="admin.html" style="color: white; text-decoration: none; font-weight: bold;">🛡️ Admin</a>
     <a href="index.html" style="color: #e50914; text-decoration: none; margin-left: auto;">🚪 Çıkış</a>
 </nav><body style="background: #111; color: white; font-family: sans-serif;">
-    <h1>Watch Me - Admin Paneli</h1>
-    <h2>Gelen Şikayetler (Report System)</h2>
-    <div id="liste"></div>
+    <!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Paneli - Watch Me</title>
+    <style>
+        body { background-color: #000; color: white; font-family: sans-serif; padding: 50px; }
+        .rapor-kutu { background: #222; padding: 15px; border-left: 5px solid #e50914; margin-bottom: 10px; border-radius: 4px; }
+        h1 { color: #e50914; }
+    </style>
+</head>
+<body>
+
+    <h1>Admin Paneli</h1>
+    <h3>Gelen Şikayetler (Report System)</h3>
+    <div id="raporListesi">Yükleniyor...</div>
 
     <script>
-        fetchapp.get('/admin-verileri', (req, res) => {
-    const gelenSifre = req.query.sifre;
-    const GERCEK_SIFRE = "admin123"; // Şifren bu olacak
+        async function raporlariYukle() {
+            const sifre = prompt("Lütfen Admin Şifresini Giriniz:");
+            
+            // fetch isteğine şifreyi parametre olarak ekliyoruz
+            const response = await fetch(`/admin-verileri?sifre=${sifre}`);
+            
+            if (response.status === 401) {
+                alert("Hatalı şifre! Erişim reddedildi.");
+                window.location.href = "dashboard.html";
+                return;
+            }
 
-    if (gelenSifre === GERCEK_SIFRE) {
-        res.json(raporlar);
-    } else {
-        res.status(401).send("Yetkisiz erişim!");
-    }
-});
-            .then(res => res.json())
-            .then(data => {
-                const liste = document.getElementById('liste');
-                data.forEach(r => {
-                    liste.innerHTML += `<p style="border:1px solid red; padding:10px;">
-                        <b>Video:</b> ${r.video} <br>
-                        <b>Sebep:</b> ${r.sebep} <br>
-                        <b>Tarih:</b> ${r.tarih}
-                    </p>`;
-                });
-            });
-    </script>async function raporlariYukle() {
-        // Sayfa açılır açılmaz şifre sorar
-        const sifre = prompt("Lütfen Admin Şifresini Giriniz:");
-        
-        // Sunucuya şifre ile istek atar
-        const response = await fetch(`/admin-verileri?sifre=${sifre}`);
-        
-        if (response.status === 401) {
-            alert("Hatalı şifre! Erişim reddedildi.");
-            window.location.href = "dashboard.html";
-            return;
+            const raporlar = await response.json();
+            const liste = document.getElementById('raporListesi');
+            
+            if (raporlar.length === 0) {
+                liste.innerHTML = "<p>Henüz raporlanmış bir video yok.</p>";
+                return;
+            }
+
+            liste.innerHTML = raporlar.map(r => `
+                <div class="rapor-kutu">
+                    <strong>Video:</strong> ${r.video} <br>
+                    <strong>Sebep:</strong> ${r.sebep} <br>
+                    <small style="color: #888;">Tarih: ${r.tarih}</small>
+                </div>
+            `).join('');
         }
 
-        const raporlar = await response.json();
-        const liste = document.getElementById('raporListesi');
-        
-        if (raporlar.length === 0) {
-            liste.innerHTML = "<p>Henüz raporlanmış bir video yok.</p>";
-            return;
-        }
-
-        liste.innerHTML = raporlar.map(r => `
-            <div style="background: #222; margin-bottom: 10px; padding: 15px; border-left: 5px solid #e50914;">
-                <strong>Video:</strong> ${r.video} <br>
-                <strong>Sebep:</strong> ${r.sebep} <br>
-                <small style="color: #888;">Tarih: ${r.tarih}</small>
-            </div>
-        `).join('');
-    }
-
-</body>app.get('/admin-verileri', (req, res) => {
-    const gelenSifre = req.query.sifre;
-    const GERCEK_SIFRE = "admin123"; // Buraya kendi gizli şifreni yaz!
-
-    if (gelenSifre === GERCEK_SIFRE) {
-        res.json(raporlar);
-    } else {
-        res.status(401).send("Yetkisiz erişim! Şifre yanlış.");
-    }
-});
-
-
+        // Sayfa yüklenince fonksiyonu çalıştır
+        raporlariYukle();
+    </script>
+</body>
+</html>
