@@ -1,58 +1,76 @@
-<nav style="background: #000; padding: 15px; display: flex; gap: 20px; border-bottom: 2px solid #e50914;">
-    <a href="anasayfa.html" style="color: white; text-decoration: none; font-weight: bold;">📺 Ana Sayfa</a>
-    <a href="yazar.html" style="color: white; text-decoration: none; font-weight: bold;">✍️ Yazar Paneli</a>
-    <a href="admin.html" style="color: white; text-decoration: none; font-weight: bold;">🛡️ Admin</a>
-    <a href="index.html" style="color: #e50914; text-decoration: none; margin-left: auto;">🚪 Çıkış</a>
-</nav><body style="background: #111; color: white; font-family: sans-serif;">
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <title>Admin Paneli - Watch Me</title>
-    <style>
-        body { background-color: #000; color: white; font-family: sans-serif; padding: 50px; }
-        .rapor-kutu { background: #222; padding: 15px; border-left: 5px solid #e50914; margin-bottom: 10px; border-radius: 4px; }
-        h1 { color: #e50914; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WatchMe | Admin Paneli</title>
+  <style>
+    body{font-family:Arial,sans-serif;background:#111;color:#fff;margin:0}
+    nav{padding:12px 20px;background:#000;display:flex;gap:12px}
+    nav a,nav button{color:#fff;background:none;border:none;text-decoration:none;cursor:pointer}
+    .container{padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .panel{background:#1d1d1d;border:1px solid #333;border-radius:8px;padding:12px}
+    .item{border-left:4px solid #e50914;background:#161616;padding:8px;margin-top:8px}
+  </style>
 </head>
 <body>
+<nav>
+  <a href="dashboard.html">🏠 Keşfet</a>
+  <a href="yazar.html">✍️ Yazar Paneli</a>
+  <a href="admin.html">🛡️ Admin</a>
+  <button onclick="logout()" style="margin-left:auto">Çıkış</button>
+</nav>
 
-    <h1>Admin Paneli</h1>
-    <h3>Gelen Şikayetler (Report System)</h3>
-    <div id="raporListesi">Yükleniyor...</div>
+<div class="container">
+  <div class="panel">
+    <h3>Gelen Şikayetler</h3>
+    <div id="reports"></div>
+  </div>
+  <div class="panel">
+    <h3>Admin'e Gelen Mesajlar</h3>
+    <div id="messages"></div>
+  </div>
+</div>
 
-    <script>
-        async function raporlariYukle() {
-            const sifre = prompt("Lütfen Admin Şifresini Giriniz:");
-            
-            // fetch isteğine şifreyi parametre olarak ekliyoruz
-            const response = await fetch(`/admin-verileri?sifre=${sifre}`);
-            
-            if (response.status === 401) {
-                alert("Hatalı şifre! Erişim reddedildi.");
-                window.location.href = "dashboard.html";
-                return;
-            }
+<script>
+  const token = localStorage.getItem('token');
+  if (!token) window.location.href = 'index.html';
 
-            const raporlar = await response.json();
-            const liste = document.getElementById('raporListesi');
-            
-            if (raporlar.length === 0) {
-                liste.innerHTML = "<p>Henüz raporlanmış bir video yok.</p>";
-                return;
-            }
+  async function api(url) {
+    return fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+  }
 
-            liste.innerHTML = raporlar.map(r => `
-                <div class="rapor-kutu">
-                    <strong>Video:</strong> ${r.video} <br>
-                    <strong>Sebep:</strong> ${r.sebep} <br>
-                    <small style="color: #888;">Tarih: ${r.tarih}</small>
-                </div>
-            `).join('');
-        }
+  async function loadAdminData() {
+    const [reportRes, messageRes] = await Promise.all([
+      api('/api/admin/reports'),
+      api('/api/admin/messages')
+    ]);
 
-        // Sayfa yüklenince fonksiyonu çalıştır
-        raporlariYukle();
-    </script>
+    if (!reportRes.ok || !messageRes.ok) {
+      alert('Admin hesabı ile giriş yapmalısınız.');
+      return;
+    }
+
+    const reports = await reportRes.json();
+    const messages = await messageRes.json();
+
+    const reportEl = document.getElementById('reports');
+    reportEl.innerHTML = reports.length
+      ? reports.map(r => `<div class="item"><b>${r.videoTitle}</b><br>${r.reason}<br><small>${r.reporterEmail}</small></div>`).join('')
+      : '<p>Henüz şikayet yok.</p>';
+
+    const messageEl = document.getElementById('messages');
+    messageEl.innerHTML = messages.length
+      ? messages.map(m => `<div class="item"><b>${m.subject}</b><br>${m.message}<br><small>${m.fromEmail}</small></div>`).join('')
+      : '<p>Henüz mesaj yok.</p>';
+  }
+
+  function logout() {
+    localStorage.clear();
+    window.location.href = 'index.html';
+  }
+
+  loadAdminData();
+</script>
 </body>
 </html>

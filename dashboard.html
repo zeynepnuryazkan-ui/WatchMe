@@ -1,104 +1,90 @@
-<nav style="background: #000; padding: 15px; display: flex; gap: 20px; border-bottom: 2px solid #e50914;">
-    <a href="anasayfa.html" style="color: white; text-decoration: none; font-weight: bold;">📺 Ana Sayfa</a>
-    <a href="yazar.html" style="color: white; text-decoration: none; font-weight: bold;">✍️ Yazar Paneli</a>
-    <a href="admin.html" style="color: white; text-decoration: none; font-weight: bold;">🛡️ Admin</a>
-    <a href="index.html" style="color: #e50914; text-decoration: none; margin-left: auto;">🚪 Çıkış</a>
-</nav><!DOCTYPE html><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <title>Watch Me - Keşfet</title>
-    <style>
-        body { background-color: #141414; color: white; font-family: 'Helvetica Neue', Helvetica, sans-serif; margin: 0; }
-        
-        /* Navigasyon Menüsü */
-        nav { background: #000; padding: 20px; display: flex; align-items: center; border-bottom: 2px solid #e50914; position: sticky; top: 0; z-index: 100; }
-        nav h1 { color: #e50914; margin: 0; margin-right: 40px; font-size: 24px; cursor: pointer; }
-        nav div { display: flex; gap: 20px; }
-        nav a { color: white; text-decoration: none; font-weight: bold; font-size: 14px; transition: 0.3s; }
-        nav a:hover { color: #e50914; }
-
-        /* Ana Bölüm */
-        .hero { height: 45vh; background: linear-gradient(to top, #141414, transparent), url('https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=2000'); background-size: cover; display: flex; align-items: flex-end; padding: 50px; }
-        .hero-text h2 { font-size: 48px; margin: 0; }
-
-        /* Video Listesi (Netflix Row) */
-        .row { padding: 20px 50px; }
-        .video-grid { display: flex; gap: 15px; overflow-x: auto; padding: 20px 0; scrollbar-width: none; }
-        .video-card { min-width: 280px; background: #222; border-radius: 8px; overflow: hidden; transition: transform 0.3s; cursor: pointer; border: 1px solid #333; }
-        .video-card:hover { transform: scale(1.05); border-color: #e50914; }
-        .video-card img { width: 100%; height: 160px; object-fit: cover; }
-        .video-info { padding: 12px; }
-        .video-info h4 { margin: 0; font-size: 16px; }
-        .video-info p { color: #888; font-size: 13px; margin: 5px 0; }
-        
-        .report-btn { color: #555; font-size: 11px; border: none; background: none; cursor: pointer; padding: 0; }
-        .report-btn:hover { color: #e50914; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WatchMe | Keşfet</title>
+  <style>
+    body{font-family:Arial,sans-serif;background:#141414;color:#fff;margin:0}
+    nav{padding:12px 20px;background:#000;display:flex;gap:12px;align-items:center}
+    nav a,nav button{color:#fff;background:none;border:none;cursor:pointer;text-decoration:none}
+    .container{padding:20px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+    .card{background:#1f1f1f;border:1px solid #333;border-radius:8px;padding:14px}
+    textarea,input,button{width:100%;margin-top:8px;padding:8px;border-radius:6px;border:1px solid #444;background:#101010;color:#fff}
+    button{background:#e50914;border:none;cursor:pointer;font-weight:700}
+  </style>
 </head>
 <body>
-
 <nav>
-    <h1 onclick="location.reload()">WATCH ME</h1>
-    <div>
-        <a href="dashboard.html">📺 Keşfet</a>
-        <a href="yazar.html">✍️ Yazar Paneli</a>
-        <a href="admin.html">🛡️ Admin</a>
-    </div>
-    <a href="index.html" style="margin-left: auto; color: #888;">Güvenli Çıkış</a>
+  <a href="dashboard.html">🏠 Keşfet</a>
+  <a href="yazar.html">✍️ Yazar Paneli</a>
+  <a href="admin.html">🛡️ Admin</a>
+  <button onclick="logout()" style="margin-left:auto">Çıkış</button>
 </nav>
+<div class="container">
+  <h2>Video Tanıtımları</h2>
+  <div id="videos" class="grid"></div>
 
-<div class="hero">
-    <div class="hero-text">
-        <h2>Hikayenin İçine Gir</h2>
-        <p>Yazarların interaktif dünyasını keşfetmeye başla.</p>
-    </div>
-</div>
-
-<div class="row">
-    <h3>Yeni Yüklenen Tanıtımlar</h3>
-    <div class="video-grid" id="videoGrid">
-        </div>
+  <h3>Admin ile İletişim</h3>
+  <input id="subject" placeholder="Konu" />
+  <textarea id="message" rows="4" placeholder="Mesajınız"></textarea>
+  <button onclick="sendMessage()">Mesajı Gönder</button>
 </div>
 
 <script>
-    // Sunucudan videoları çek ve ekrana diz
-    async function videolariYukle() {
-        const response = await fetch('/videolari-getir');
-        const videolar = await response.json();
-        const grid = document.getElementById('videoGrid');
+  const token = localStorage.getItem('token');
+  if (!token) window.location.href = 'index.html';
 
-        if (videolar.length === 0) {
-            grid.innerHTML = "<p style='color:#555;'>Henüz yüklenmiş bir video yok. İlkini sen yükle!</p>";
-            return;
-        }
+  async function api(url, options = {}) {
+    return fetch(url, {
+      ...options,
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...(options.headers || {}) }
+    });
+  }
 
-        grid.innerHTML = videolar.map(v => `
-            <div class="video-card">
-                <img src="${v.kapakResmi || 'https://via.placeholder.com/280x160?text=Kitap+Tanitimi'}" onclick="window.location.href='izle.html'">
-                <div class="video-info">
-                    <h4>${v.kitapAdi}</h4>
-                    <p>${v.yazar}</p>
-                    <button class="report-btn" onclick="sikayetEt('${v.kitapAdi}')">⚠️ Bu videoyu raporla</button>
-                </div>
-            </div>
-        `).join('');
+  async function loadVideos() {
+    const res = await fetch('/api/videos');
+    const videos = await res.json();
+    const el = document.getElementById('videos');
+    if (!videos.length) {
+      el.innerHTML = '<p>Henüz video yok.</p>';
+      return;
     }
 
-    async function sikayetEt(kitapAdi) {
-        const sebep = prompt("Neden şikayet ediyorsunuz? (Kadına şiddet, zorbalık vb.)");
-        if (sebep) {
-            await fetch('/sikayet-et', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ video: kitapAdi, sebep: sebep })
-            });
-            alert("Raporunuz incelenmek üzere admine gönderildi.");
-        }
-    }
+    el.innerHTML = videos.map(v => `
+      <div class="card">
+        <h4>${v.title}</h4>
+        <p>${v.description || ''}</p>
+        <p><small>Yazar: ${v.writerName}</small></p>
+        <a href="${v.videoUrl}" target="_blank">🎬 Videoyu Aç</a>
+        <button onclick="reportVideo('${v.id}')">⚠️ Şikayet Et</button>
+      </div>
+    `).join('');
+  }
 
-    videolariYukle();
+  async function reportVideo(videoId) {
+    const reason = prompt('Şikayet nedeninizi yazın:');
+    if (!reason) return;
+    const res = await api('/api/reports', { method: 'POST', body: JSON.stringify({ videoId, reason }) });
+    const data = await res.json();
+    alert(data.message);
+  }
+
+  async function sendMessage() {
+    const subject = document.getElementById('subject').value;
+    const message = document.getElementById('message').value;
+    const res = await api('/api/messages', { method: 'POST', body: JSON.stringify({ subject, message }) });
+    const data = await res.json();
+    alert(data.message);
+  }
+
+  function logout() {
+    localStorage.clear();
+    window.location.href = 'index.html';
+  }
+
+  loadVideos();
 </script>
-
 </body>
 </html>
