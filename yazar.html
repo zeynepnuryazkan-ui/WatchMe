@@ -1,120 +1,58 @@
-<nav style="background: #000; padding: 15px; display: flex; gap: 20px; border-bottom: 2px solid #e50914;">
-    <a href="anasayfa.html" style="color: white; text-decoration: none; font-weight: bold;">📺 Ana Sayfa</a>
-    <a href="yazar.html" style="color: white; text-decoration: none; font-weight: bold;">✍️ Yazar Paneli</a>
-    <a href="admin.html" style="color: white; text-decoration: none; font-weight: bold;">🛡️ Admin</a>
-    <a href="index.html" style="color: #e50914; text-decoration: none; margin-left: auto;">🚪 Çıkış</a>
-</nav><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <title>Watch Me - Yazar Paneli</title>
-    <style>
-        body { background: #141414; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .panel-container { width: 500px; margin: 50px auto; background: #1f1f1f; padding: 30px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-        h2 { color: #e50914; border-bottom: 2px solid #333; padding-bottom: 10px; }
-        label { display: block; margin-top: 15px; color: #b3b3b3; }
-        <input type="text" id="videoIsmi" placeholder="Video Adı">
-<input type="text" id="videoLink" placeholder="YouTube Linki">
-<input type="email" id="yazarEmail" placeholder="E-posta">
-<button onclick="videoYukle()">Tanıtımı Yayınla</button>
-        .info { font-size: 12px; color: #888; margin-top: 10px; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WatchMe | Yazar Paneli</title>
+  <style>
+    body{font-family:Arial,sans-serif;background:#111;color:#fff;margin:0}
+    nav{padding:12px 20px;background:#000;display:flex;gap:12px}
+    nav a,nav button{color:#fff;background:none;border:none;text-decoration:none;cursor:pointer}
+    .box{max-width:700px;margin:30px auto;background:#1d1d1d;border:1px solid #333;padding:20px;border-radius:10px}
+    input,textarea,button{width:100%;padding:10px;margin-top:8px;background:#0f0f0f;color:#fff;border:1px solid #444;border-radius:6px}
+    button{background:#e50914;border:none;font-weight:700}
+  </style>
 </head>
 <body>
+<nav>
+  <a href="dashboard.html">🏠 Keşfet</a>
+  <a href="yazar.html">✍️ Yazar Paneli</a>
+  <a href="admin.html">🛡️ Admin</a>
+  <button onclick="logout()" style="margin-left:auto">Çıkış</button>
+</nav>
 
-<div class="panel-container">
-    <h2>Yazar Paneli</h2>
-    <p>Kitabınızı milyonlarca okuyucuya tanıtın.</p><input type="email" id="yazarEmail" placeholder="E-posta Adresiniz (İletişim için)" required 
-       style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #333; background: #222; color: white;">
-
-<script>
-    // Kaydet butonuna basıldığında gönderilen veriye email'i de ekle
-    async function videoYukle() {
-        const videoIsmi = document.getElementById('videoIsmi').value;
-        const videoLink = document.getElementById('videoLink').value;
-        const email = document.getElementById('yazarEmail').value;
-
-        const response = await fetch('/video-yukle', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ isim: videoIsmi, link: videoLink, email: email })
-        });
-        // ... (diğer kodlar aynı kalabilir)
-    }
-</script>
-    
-    <label>Yazar Adı Soyadı</label>
-    <input type="text" id="yazar" placeholder="Örn: Zeynep Yılmaz">
-
-    <label>Kitap Adı</label>
-    <input type="text" id="kitap" placeholder="Örn: Gece Yarısı Kütüphanesi">
-
-    <label>Video Tanıtım Linki (MP4 veya YouTube)</label>
-    <input type="text" id="video" placeholder="https://link-adresi.com/video.mp4">
-
-    <label>Kapak Görseli Linki</label>
-    <input type="text" id="kapak" placeholder="https://link-adresi.com/kapak.jpg">
-
-    <button class="upload-btn" onclick="videoGonder()">Tanıtımı Yayınla</button>
-    
-    <p class="info">⚠️ Videonuz topluluk kurallarımıza uygun olmalıdır. Kadına şiddet, taciz veya nefret söylemi içeren videolar doğrudan silinir.</p>
+<div class="box">
+  <h2>Video Tanıtım Yükle</h2>
+  <p>Sadece yazar/admin hesapları video yükleyebilir.</p>
+  <input id="title" placeholder="Video başlığı" />
+  <textarea id="description" rows="4" placeholder="Kısa açıklama"></textarea>
+  <input id="videoUrl" placeholder="Video URL (YouTube veya MP4)" />
+  <button onclick="uploadVideo()">Yayınla</button>
 </div>
 
 <script>
-    async function videoGonder() {
-        const veri = {
-            yazar: document.getElementById('yazar').value,
-            kitapAdi: document.getElementById('kitap').value,
-            videoUrl: document.getElementById('video').value,
-            kapakResmi: document.getElementById('kapak').value
-        };
+  const token = localStorage.getItem('token');
+  if (!token) window.location.href = 'index.html';
 
-        if(!veri.yazar || !veri.videoUrl) return alert("Lütfen gerekli alanları doldurun.");
+  async function uploadVideo() {
+    const title = document.getElementById('title').value;
+    const description = document.getElementById('description').value;
+    const videoUrl = document.getElementById('videoUrl').value;
 
-        const response = await fetch('/video-yukle', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(veri)
-        });
+    const res = await fetch('/api/videos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ title, description, videoUrl })
+    });
+    const data = await res.json();
+    alert(data.message);
+    if (res.ok) window.location.href = 'dashboard.html';
+  }
 
-        const sonuc = await response.json();
-        alert(sonuc.mesaj);
-        window.location.href = "anasayfa.html"; // Yükleme bitince ana sayfaya yönlendir
-    }
-</script>async function videoYukle() {
-    // Sayfadaki kutucuklardan verileri alıyoruz
-    const isim = document.getElementById('videoIsmi').value;
-    const link = document.getElementById('videoLink').value;
-    const email = document.getElementById('yazarEmail').value;
-
-    // Boş alan kontrolü
-    if (!isim || !link || !email) {
-        alert("Lütfen tüm alanları doldurun!");
-        return;
-    }
-
-    try {
-        const response = await fetch('/video-yukle', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ isim, link, email })
-        });
-
-        if (response.ok) {
-            alert("Tanıtım başarıyla yayınlandı!");
-            window.location.href = "index.html"; // Yükleme bitince ana sayfaya gönder
-        } else {
-            alert("Bir hata oluştu. Lütfen tekrar deneyin.");
-        }
-    } catch (error) {
-        console.error("Hata:", error);
-        alert("Sunucuya bağlanılamadı!");
-    }
-}
-
+  function logout() {
+    localStorage.clear();
+    window.location.href = 'index.html';
+  }
+</script>
 </body>
-
 </html>
-
-
-

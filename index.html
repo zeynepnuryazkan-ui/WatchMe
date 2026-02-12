@@ -1,25 +1,78 @@
-<nav style="background: #000; padding: 15px; display: flex; gap: 20px; border-bottom: 2px solid #e50914;">
-    <a href="anasayfa.html" style="color: white; text-decoration: none; font-weight: bold;">📺 Ana Sayfa</a>
-    <a href="yazar.html" style="color: white; text-decoration: none; font-weight: bold;">✍️ Yazar Paneli</a>
-    <a href="admin.html" style="color: white; text-decoration: none; font-weight: bold;">🛡️ Admin</a>
-    <a href="index.html" style="color: #e50914; text-decoration: none; margin-left: auto;">🚪 Çıkış</a>
-</nav><body style="background: #111; color: white; font-family: sans-serif;">
-    <h1>Watch Me - Admin Paneli</h1>
-    <h2>Gelen Şikayetler (Report System)</h2>
-    <div id="liste"></div>
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WatchMe | Giriş & Kayıt</title>
+  <style>
+    body{font-family:Arial,sans-serif;background:#111;color:#fff;margin:0;display:grid;place-items:center;min-height:100vh}
+    .wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:900px;width:95%}
+    .card{background:#1d1d1d;padding:20px;border-radius:10px;border:1px solid #333}
+    h1{color:#e50914;margin-top:0}
+    input,select,button{width:100%;padding:10px;margin:7px 0;border-radius:6px;border:1px solid #444;background:#0f0f0f;color:#fff}
+    button{background:#e50914;border:none;font-weight:700;cursor:pointer}
+    .hint{font-size:12px;color:#bbb}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Giriş Yap</h1>
+      <input id="loginEmail" type="email" placeholder="E-posta" />
+      <input id="loginPassword" type="password" placeholder="Şifre" />
+      <button onclick="login()">Giriş</button>
+      <p class="hint">Demo admin: <b>admin@watchme.com / admin123</b></p>
+    </div>
 
-    <script>
-        fetch('/admin-verileri')
-            .then(res => res.json())
-            .then(data => {
-                const liste = document.getElementById('liste');
-                data.forEach(r => {
-                    liste.innerHTML += `<p style="border:1px solid red; padding:10px;">
-                        <b>Video:</b> ${r.video} <br>
-                        <b>Sebep:</b> ${r.sebep} <br>
-                        <b>Tarih:</b> ${r.tarih}
-                    </p>`;
-                });
-            });
-    </script>
+    <div class="card">
+      <h1>Kayıt Ol</h1>
+      <input id="regName" type="text" placeholder="Ad Soyad" />
+      <input id="regEmail" type="email" placeholder="E-posta" />
+      <input id="regPassword" type="password" placeholder="Şifre" />
+      <select id="regRole">
+        <option value="user">Okuyucu</option>
+        <option value="writer">Yazar</option>
+      </select>
+      <button onclick="register()">Hesap Oluştur</button>
+    </div>
+  </div>
+
+  <script>
+    const saveSession = (data) => {
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      if (data.user.role === 'admin') window.location.href = 'admin.html';
+      else if (data.user.role === 'writer') window.location.href = 'yazar.html';
+      else window.location.href = 'dashboard.html';
+    };
+
+    async function login() {
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if (!res.ok) return alert(data.message);
+      saveSession(data);
+    }
+
+    async function register() {
+      const name = document.getElementById('regName').value;
+      const email = document.getElementById('regEmail').value;
+      const password = document.getElementById('regPassword').value;
+      const role = document.getElementById('regRole').value;
+
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password, role })
+      });
+      const data = await res.json();
+      alert(data.message);
+    }
+  </script>
 </body>
+</html>
