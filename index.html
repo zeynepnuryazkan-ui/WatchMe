@@ -11,7 +11,10 @@
     h1{color:#e50914;margin-top:0}
     input,select,button{width:100%;padding:10px;margin:7px 0;border-radius:6px;border:1px solid #444;background:#0f0f0f;color:#fff}
     button{background:#e50914;border:none;font-weight:700;cursor:pointer}
+    button:disabled{opacity:.6;cursor:not-allowed}
     .hint{font-size:12px;color:#bbb}
+    .status{font-size:13px;color:#9ad1ff;min-height:20px}
+    @media (max-width: 760px){.wrap{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
@@ -20,7 +23,7 @@
       <h1>Giriş Yap</h1>
       <input id="loginEmail" type="email" placeholder="E-posta" />
       <input id="loginPassword" type="password" placeholder="Şifre" />
-      <button onclick="login()">Giriş</button>
+      <button id="loginBtn" type="button">Giriş</button>
       <p class="hint">Demo admin: <b>admin@watchme.com / admin123</b></p>
     </div>
 
@@ -33,46 +36,119 @@
         <option value="user">Okuyucu</option>
         <option value="writer">Yazar</option>
       </select>
-      <button onclick="register()">Hesap Oluştur</button>
+      <button id="registerBtn" type="button">Hesap Oluştur</button>
     </div>
   </div>
 
+  <p id="status" class="status"></p>
+
   <script>
-    const saveSession = (data) => {
+    const statusEl = document.getElementById('status');
+
+    function setStatus(message, isError = false) {
+      statusEl.textContent = message;
+      statusEl.style.color = isError ? '#ff9a9a' : '#9ad1ff';
+    }
+
+    function setBusy(buttonEl, busy) {
+      buttonEl.disabled = busy;
+      buttonEl.textContent = busy ? 'Lütfen bekleyin...' : buttonEl.dataset.defaultLabel;
+    }
+
+    function saveSession(data) {
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       if (data.user.role === 'admin') window.location.href = 'admin.html';
       else if (data.user.role === 'writer') window.location.href = 'yazar.html';
       else window.location.href = 'dashboard.html';
-    };
+    }
 
     async function login() {
-      const email = document.getElementById('loginEmail').value;
+      const loginBtn = document.getElementById('loginBtn');
+      const email = document.getElementById('loginEmail').value.trim();
       const password = document.getElementById('loginPassword').value;
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      const data = await res.json();
-      if (!res.ok) return alert(data.message);
-      saveSession(data);
+
+      if (!email || !password) {
+        setStatus('Lütfen e-posta ve şifre girin.', true);
+        return;
+      }
+
+      try {
+        setBusy(loginBtn, true);
+        setStatus('Giriş yapılıyor...');
+
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          setStatus(data.message || 'Giriş başarısız.', true);
+          return;
+        }
+
+        setStatus('Giriş başarılı, yönlendiriliyorsunuz...');
+        saveSession(data);
+      } catch (error) {
+        setStatus('Sunucuya ulaşılamadı. Sunucunun çalıştığını kontrol edin.', true);
+      } finally {
+        setBusy(loginBtn, false);
+      }
     }
 
     async function register() {
-      const name = document.getElementById('regName').value;
-      const email = document.getElementById('regEmail').value;
+      const registerBtn = document.getElementById('registerBtn');
+      const name = document.getElementById('regName').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
       const password = document.getElementById('regPassword').value;
       const role = document.getElementById('regRole').value;
 
-      const res = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, role })
-      });
-      const data = await res.json();
-      alert(data.message);
+      if (!name || !email || !password) {
+        setStatus('Kayıt için tüm alanları doldurun.', true);
+        return;
+      }
+
+      try {
+        setBusy(registerBtn, true);
+        setStatus('Hesap oluşturuluyor...');
+
+        const res = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password, role })
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          setStatus(data.message || 'Kayıt başarısız.', true);
+          return;
+        }
+
+        setStatus('Kayıt başarılı. Şimdi giriş yapabilirsiniz.');
+      } catch (error) {
+        setStatus('Sunucuya ulaşılamadı. Sunucunun çalıştığını kontrol edin.', true);
+      } finally {
+        setBusy(registerBtn, false);
+      }
     }
+
+    const loginBtn = document.getElementById('loginBtn');
+    const registerBtn = document.getElementById('registerBtn');
+    loginBtn.dataset.defaultLabel = loginBtn.textContent;
+    registerBtn.dataset.defaultLabel = registerBtn.textContent;
+
+    loginBtn.addEventListener('click', login);
+    registerBtn.addEventListener('click', register);
+
+    document.getElementById('loginPassword').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') login();
+    });
+
+    document.getElementById('regPassword').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') register();
+    });
   </script>
 </body>
 </html>
